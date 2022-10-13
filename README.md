@@ -305,5 +305,4 @@ Table 3-1 lists some of the commonly used filters that come with Jinja2.
 
 The safe filter is interesting to highlight. By default Jinja2 escapes all variables for security purposes. For example, if a variable is set to the value '<h1>Hello</h1>', Jinja2 will render the string as '&lt;h1&gt;Hello&lt;/h1&gt;', which will cause the h1 element to be displayed and not interpreted by the browser. Many times it is necessary to display HTML code stored in variables, and for those cases the safe filter is used.
 
-
-
+-Finished (deprecated+only examples for the rest)
