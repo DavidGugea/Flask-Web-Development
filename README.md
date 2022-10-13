@@ -229,5 +229,81 @@ Flask is designed to be extended. It intentionally stays out of areas of importa
 
 A great variety of Flask extensions for many different purposes have been created by the community, and if that is not enough, any standard Python package or library can be used as well.
 
+# 3. Templates
+
+## Introduction
+
+The key to writing applications that are easy to maintain is to write clean and wellstructured code. The examples that you have seen so far are too simple to demonstrate this, but Flask view functions have two completely independent purposes disguised as one, which creates a problem.
+
+The obvious task of a view function is to generate a response to a request, as you have seen in the examples shown in Chapter 2. For the simplest requests this is enough, but in many cases a request also triggers a change in the state of the application, and the view function is where this change is generated.
+
+For example, consider a user who is registering a new account on a website. The user types an email address and a password in a web form and clicks the Submit button. On the server, a request with the data provided by the user arrives, and Flask dispatches it to the view function that handles registration requests. This view function needs to talk to the database to get the new user added, and then generate a response to send back to the browser that includes a success or failure message. These two types of tasks are formally called business logic and presentation logic, respectively.
+
+Mixing business and presentation logic leads to code that is hard to understand and maintain. Imagine having to build the HTML code for a large table by concatenating data obtained from the database with the necessary HTML string literals. Moving the presentation logic into templates helps improve the maintainability of the application.
+
+A template is a file that contains the text of a response, with placeholder variables for the dynamic parts that will be known only in the context of a request. The process that replaces the variables with actual values and returns a final response string is called rendering. For the task of rendering templates, Flask uses a powerful template engine called Jinja2.
+
+## The Jinja2 Template Engine
+
+In its simplest form, a Jinja2 template is a file that contains the text of a response. Example 3-1 shows a Jinja2 template that matches the response of the index() view function of Example 2-1.
+
+```html
+<h1>Hello World!</h1>
+```
+
+The response returned by the user() view function of Example 2-2 has a dynamic component, which is represented by a variable. Example 3-2 shows the template that implements this response.
+
+```html
+<h1>Hello, {{ name }}!</h1>
+```
+
+## Rendering Templates
+
+By default Flask looks for templates in a templates subdirectory located inside the main application directory. For the next version of hello.py, you need to create the templates subdirectory and store the templates defined in the previous examples in it as index.html and user.html, respectively.
+
+The view functions in the application need to be modified to render these templates. Example 3-3 shows these changes.
+
+```python
+from flask import Flask, render_template
+# ...
+
+@app.route('/')
+def index():
+  return render_template('index.html')
+  
+@app.route('/user/<name>')
+def user(name):
+  return render_template('user.html', name=name)
+```
+
+The function render_template() provided by Flask integrates the Jinja2 template engine with the application. This function takes the filename of the template as its first argument. Any additional arguments are key-value pairs that represent actual values for variables referenced in the template. In this example, the second template is receiving a name variable.
+
+Keyword arguments like name=name in the previous example are fairly common, but they may seem confusing and hard to understand if you are not used to them. The “name” on the left side represents the argument name, which is used in the placeholder written in the template. The “name” on the right side is a variable in the current scope that provides the value for the argument of the same name. While this is a common pattern, using the same variable name on both sides is not required.
+
+## Variables
+
+The {{ name }} construct used in the template shown in Example 3-2 references a variable, a special placeholder that tells the template engine that the value that goes in that place should be obtained from data provided at the time the template is rendered.
+
+Jinja2 recognizes variables of any type, even complex types such as lists, dictionaries, and objects. The following are some more examples of variables used in templates:
+
+```html
+<p>A value from a dictionary: {{ mydict['key'] }}.</p>
+<p>A value from a list: {{ mylist[3] }}.</p>
+<p>A value from a list, with a variable index: {{ mylist[myintvar] }}.</p>
+<p>A value from an object's method: {{ myobj.somemethod() }}.</p>
+```
+
+Variables can be modified with filters, which are added after the variable name with a pipe character as separator. For example, the following template shows the name variable capitalized:
+
+```
+Hello, {{ name|capitalize }}
+```
+
+Table 3-1 lists some of the commonly used filters that come with Jinja2.
+
+![Table](ScreenshotsForNotes/Chapter3/Table_3_1.PNG)
+
+The safe filter is interesting to highlight. By default Jinja2 escapes all variables for security purposes. For example, if a variable is set to the value '<h1>Hello</h1>', Jinja2 will render the string as '&lt;h1&gt;Hello&lt;/h1&gt;', which will cause the h1 element to be displayed and not interpreted by the browser. Many times it is necessary to display HTML code stored in variables, and for those cases the safe filter is used.
+
 
 
